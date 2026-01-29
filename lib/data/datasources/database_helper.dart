@@ -28,10 +28,42 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
       onConfigure: _onConfigure,
     );
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Version 2: Add Folders support
+      await db.execute('''
+        CREATE TABLE folders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            description TEXT,
+            created_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE folder_decks (
+            folder_id INTEGER NOT NULL,
+            deck_id INTEGER NOT NULL,
+            PRIMARY KEY (folder_id, deck_id),
+            FOREIGN KEY(folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+            FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX idx_folder_decks_folder ON folder_decks(folder_id)',
+      );
+      await db.execute(
+        'CREATE INDEX idx_folder_decks_deck ON folder_decks(deck_id)',
+      );
+    }
   }
 
   Future _onConfigure(Database db) async {
@@ -74,7 +106,37 @@ class DatabaseHelper {
 
     // Indexes
     await db.execute('CREATE INDEX idx_cards_deck_id ON cards(deck_id)');
-    await db.execute('CREATE INDEX idx_cards_next_review ON cards(next_review)');
+    await db.execute(
+      'CREATE INDEX idx_cards_next_review ON cards(next_review)',
+    );
+
+    // 3. Folders Table
+    await db.execute('''
+      CREATE TABLE folders (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          created_at INTEGER NOT NULL
+      )
+    ''');
+
+    // 4. Folder-Decks Join Table (Many-to-Many)
+    await db.execute('''
+      CREATE TABLE folder_decks (
+          folder_id INTEGER NOT NULL,
+          deck_id INTEGER NOT NULL,
+          PRIMARY KEY (folder_id, deck_id),
+          FOREIGN KEY(folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+          FOREIGN KEY(deck_id) REFERENCES decks(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX idx_folder_decks_folder ON folder_decks(folder_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_folder_decks_deck ON folder_decks(deck_id)',
+    );
   }
 
   Future<void> close() async {

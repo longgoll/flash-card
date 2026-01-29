@@ -7,6 +7,7 @@ import 'core/theme/app_theme.dart';
 import 'data/datasources/database_helper.dart';
 import 'features/dashboard/providers/deck_provider.dart';
 import 'features/dashboard/pages/dashboard_page.dart';
+import 'features/dashboard/providers/folder_provider.dart';
 import 'core/providers/theme_provider.dart';
 import 'core/providers/locale_provider.dart';
 import 'core/l10n/app_localizations.dart';
@@ -38,6 +39,7 @@ class FlashDeskApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => DeckProvider()..loadDecks()),
+        ChangeNotifierProvider(create: (_) => FolderProvider()..loadFolders()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],

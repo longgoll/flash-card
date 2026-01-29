@@ -6,6 +6,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../providers/editor_provider.dart';
 import '../../../data/models/deck_model.dart';
 import '../../../data/models/card_model.dart';
+import 'import_page.dart';
 
 class EditorPage extends StatefulWidget {
   final Deck deck;
@@ -184,6 +185,23 @@ class _EditorPageState extends State<EditorPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.download),
+            tooltip: l10n.importCards,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ImportPage(deck: _currentDeck),
+                ),
+              ).then((_) {
+                // Reload cards after import
+                context.read<EditorProvider>().loadCards(_currentDeck.id!);
+              });
+            },
+          ),
+        ],
       ),
       body: CallbackShortcuts(
         bindings: {

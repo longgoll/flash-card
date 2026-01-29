@@ -73,8 +73,21 @@ class AppLocalizations {
       'delete_deck': 'Delete Deck',
       'delete_deck_confirm': 'Are you sure you want to delete this deck?',
       'deck_deleted': 'Deck deleted successfully',
-      'deck_created': 'Deck created successfully',
-      'deck_updated': 'Deck updated successfully',
+
+      // Folders
+      'folders': 'Folders',
+      'folder_name': 'Folder Name',
+      'enter_folder_name': 'Enter folder name',
+      'no_folders': 'No folders yet',
+      'create_first_folder': 'Create your first folder',
+      'delete_folder': 'Delete Folder',
+      'delete_folder_confirm':
+          'Are you sure? Decks inside will NOT be deleted.',
+      'create_folder': 'Create Folder',
+      'edit_folder': 'Edit Folder',
+      'new_folder': 'New Folder',
+      'add_deck': 'Add Deck',
+      'add_deck_to_folder': 'Add Decks to Folder',
 
       // Study Modes
       'study_modes': 'Study Modes',
@@ -189,6 +202,17 @@ class AppLocalizations {
       'swap': 'Swap',
       'import_cards': 'Import Cards',
       'export_cards': 'Export Cards',
+      'paste_content': 'Paste content here (e.g. Term [tab] Definition)',
+      'separator': 'Separator',
+      'tab': 'Tab',
+      'comma': 'Comma',
+      'semicolon': 'Semicolon',
+      'custom': 'Custom',
+      'preview': 'Preview',
+      'import_success': 'Imported {count} cards successfully',
+      'no_content': 'Please paste some content first',
+      'term_definition': 'Term - Definition',
+      'term_definition_example': 'e.g., Hello [tab] Xin chào',
 
       // Validation & Errors
       'field_required': 'This field is required',
@@ -274,7 +298,20 @@ class AppLocalizations {
       'deck_created': 'Đã tạo bộ thẻ',
       'deck_updated': 'Đã cập nhật bộ thẻ',
 
-      // Study Modes
+      // Folders
+      'folders': 'Thư mục',
+      'folder_name': 'Tên thư mục',
+      'enter_folder_name': 'Nhập tên thư mục',
+      'no_folders': 'Chưa có thư mục nào',
+      'create_first_folder': 'Tạo thư mục đầu tiên',
+      'delete_folder': 'Xóa thư mục',
+      'delete_folder_confirm':
+          'Bạn có chắc không? Các bộ thẻ bên trong sẽ KHÔNG bị xóa.',
+      'create_folder': 'Tạo thư mục',
+      'edit_folder': 'Sửa thư mục',
+      'new_folder': 'Thư mục mới',
+      'add_deck': 'Thêm bộ thẻ',
+      'add_deck_to_folder': 'Thêm bộ thẻ vào thư mục',
       'study_modes': 'Chế độ học',
       'flashcards': 'Thẻ ghi nhớ',
       'flashcards_desc': 'Xem lại từng thẻ một',
@@ -387,6 +424,17 @@ class AppLocalizations {
       'swap': 'Đổi',
       'import_cards': 'Nhập thẻ',
       'export_cards': 'Xuất thẻ',
+      'paste_content': 'Dán nội dung vào đây (VN: Thuật ngữ [tab] Định nghĩa)',
+      'separator': 'Dấu phân cách',
+      'tab': 'Tab',
+      'comma': 'Dấu phẩy',
+      'semicolon': 'Dấu chấm phẩy',
+      'custom': 'Tùy chỉnh',
+      'preview': 'Xem trước',
+      'import_success': 'Đã nhập thành công {count} thẻ',
+      'no_content': 'Vui lòng dán nội dung trước',
+      'term_definition': 'Thuật ngữ - Định nghĩa',
+      'term_definition_example': 'ví dụ: Hello [tab] Xin chào',
 
       // Validation & Errors
       'field_required': 'Trường này là bắt buộc',
@@ -479,6 +527,20 @@ class AppLocalizations {
   String get deckDeleted => translate('deck_deleted');
   String get deckCreated => translate('deck_created');
   String get deckUpdated => translate('deck_updated');
+
+  // Folders
+  String get folders => translate('folders');
+  String get folderName => translate('folder_name');
+  String get enterFolderName => translate('enter_folder_name');
+  String get noFolders => translate('no_folders');
+  String get createFirstFolder => translate('create_first_folder');
+  String get deleteFolder => translate('delete_folder');
+  String get deleteFolderConfirm => translate('delete_folder_confirm');
+  String get createFolder => translate('create_folder');
+  String get editFolder => translate('edit_folder');
+  String get newFolder => translate('new_folder');
+  String get addDeck => translate('add_deck');
+  String get addDeckToFolder => translate('add_deck_to_folder');
 
   // Study Modes
   String get studyModes => translate('study_modes');
@@ -593,6 +655,17 @@ class AppLocalizations {
   String get swap => translate('swap');
   String get importCards => translate('import_cards');
   String get exportCards => translate('export_cards');
+  String get pasteContent => translate('paste_content');
+  String get separator => translate('separator');
+  String get tab => translate('tab');
+  String get comma => translate('comma');
+  String get semicolon => translate('semicolon');
+  String get custom => translate('custom');
+  String get preview => translate('preview');
+  String get importSuccess => translate('import_success');
+  String get noContent => translate('no_content');
+  String get termDefinition => translate('term_definition');
+  String get termDefinitionExample => translate('term_definition_example');
 
   // Validation & Errors
   String get fieldRequired => translate('field_required');

@@ -10,19 +10,35 @@ import '../../study/pages/flashcard_page.dart';
 import '../../study/pages/quiz_page.dart';
 import '../../study/pages/match_page.dart';
 import '../../settings/pages/settings_page.dart';
+import 'folder_list_page.dart';
 import '../../../core/l10n/app_localizations.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final pages = [const DeckListPage(), const FolderListPage()];
+
     return Scaffold(
-      backgroundColor: Colors.transparent, // Use window background
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        title: Text(
+          _currentIndex == 0
+              ? l10n.myDecks
+              : (l10n.folders.isNotEmpty ? l10n.folders : "Folders"),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -37,6 +53,39 @@ class DashboardPage extends StatelessWidget {
           const SizedBox(width: 8),
         ],
       ),
+      body: pages[_currentIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.style_outlined),
+            selectedIcon: const Icon(Icons.style),
+            label: l10n.myDecks,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.folder_open),
+            selectedIcon: const Icon(Icons.folder),
+            label: l10n.folders.isNotEmpty ? l10n.folders : "Folders",
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DeckListPage extends StatelessWidget {
+  const DeckListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDeckDialog(context),
         label: Text(l10n.newDeck),
@@ -105,37 +154,13 @@ class DashboardPage extends StatelessWidget {
                         ),
                       ),
                     ).then((_) {
-                      // Reload decks to update card count if needed
                       provider.loadDecks();
                     });
                   },
-                  onSecondaryTap: () {
-                    // Right click deletes for now
-                    // Simple confirm dialog
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: Text(l10n.deleteDeck),
-                        content: Text(l10n.deleteDeckConfirm),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: Text(l10n.cancel),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              provider.deleteDeck(deck.id!);
-                              Navigator.pop(ctx);
-                            },
-                            child: Text(
-                              l10n.delete,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                  onSecondaryTap: () =>
+                      _showDeleteDeckDialog(context, provider, deck),
+                  onLongPress: () =>
+                      _showDeleteDeckDialog(context, provider, deck),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -155,7 +180,6 @@ class DashboardPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header Row with Title and Date
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -201,7 +225,6 @@ class DashboardPage extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         const Spacer(),
-                        // Bottom Row with Actions only
                         Row(
                           children: [
                             Chip(
@@ -337,6 +360,34 @@ class DashboardPage extends StatelessWidget {
               }
             },
             child: Text(l10n.create),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDeckDialog(
+    BuildContext context,
+    DeckProvider provider,
+    dynamic deck,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.deleteDeck),
+        content: Text(l10n.deleteDeckConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              provider.deleteDeck(deck.id!);
+              Navigator.pop(ctx);
+            },
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
