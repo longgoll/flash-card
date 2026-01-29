@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../data/models/deck_model.dart';
 import '../../../data/repositories/card_repository.dart';
 
@@ -247,6 +248,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -260,7 +262,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
             ),
             const SizedBox(width: 8),
             Text(
-              _isGameCompleted ? "Finished!" : _formatTime(_secondsElapsed),
+              _isGameCompleted ? l10n.done : _formatTime(_secondsElapsed),
               style: TextStyle(
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.bold,
@@ -287,7 +289,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadGame,
-            tooltip: 'Restart',
+            tooltip: l10n.restart,
           ),
         ],
       ),
@@ -296,6 +298,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
     if (_isLoading) return const Center(child: CircularProgressIndicator());
 
     if (_terms.isEmpty) {
@@ -310,12 +313,12 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 16),
             Text(
-              "Not enough cards",
+              l10n.noCardsInDeck,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
-              "Need at least 3 cards to play Match",
+              l10n.addCardsFirst,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
@@ -333,6 +336,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
   }
 
   Widget _buildCompletedView() {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -357,7 +361,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 32),
           Text(
-            "Great Job! 🎉",
+            "${l10n.congratulations} 🎉",
             style: Theme.of(
               context,
             ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -394,7 +398,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
               OutlinedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back),
-                label: const Text("Back"),
+                label: Text(l10n.back),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -406,7 +410,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
               ElevatedButton.icon(
                 onPressed: _loadGame,
                 icon: const Icon(Icons.replay),
-                label: const Text("Play Again"),
+                label: Text(l10n.playAgain),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
@@ -424,11 +428,12 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
   }
 
   Widget _buildGameView() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Instructions
+          // Instructions (keep in English for now, simple enough)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -436,7 +441,7 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              "Tap a term, then tap its matching definition",
+              l10n.translate('match_instruction'),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                 fontSize: 13,
@@ -454,7 +459,10 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildColumnHeader("TERMS", Icons.text_fields),
+                      _buildColumnHeader(
+                        l10n.term.toUpperCase(),
+                        Icons.text_fields,
+                      ),
                       const SizedBox(height: 12),
                       Expanded(
                         child: ListView.builder(
@@ -477,7 +485,10 @@ class _MatchPageState extends State<MatchPage> with TickerProviderStateMixin {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildColumnHeader("DEFINITIONS", Icons.menu_book),
+                      _buildColumnHeader(
+                        l10n.definition.toUpperCase(),
+                        Icons.menu_book,
+                      ),
                       const SizedBox(height: 12),
                       Expanded(
                         child: ListView.builder(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../data/models/card_model.dart';
 import '../../../data/models/deck_model.dart';
 import '../../../data/repositories/card_repository.dart';
@@ -87,10 +88,11 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text("Flashcards: ${widget.deck.name}"),
+        title: Text("${l10n.flashcards}: ${widget.deck.name}"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -118,7 +120,7 @@ class _FlashcardPageState extends State<FlashcardPage>
             child: _isLoading
                 ? const CircularProgressIndicator()
                 : _cards.isEmpty
-                ? const Text("No cards in this deck.")
+                ? Text(l10n.noCardsInDeck)
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -158,13 +160,13 @@ class _FlashcardPageState extends State<FlashcardPage>
                           IconButton(
                             onPressed: _prevCard,
                             icon: const Icon(Icons.arrow_back_ios),
-                            tooltip: "Previous (Left Arrow)",
+                            tooltip: l10n.back,
                           ),
                           const SizedBox(width: 32),
                           ElevatedButton.icon(
                             onPressed: _flipCard,
                             icon: const Icon(Icons.flip),
-                            label: const Text("FLIP (Space)"),
+                            label: Text(l10n.tapToFlip),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 32,
@@ -176,7 +178,7 @@ class _FlashcardPageState extends State<FlashcardPage>
                           IconButton(
                             onPressed: _nextCard,
                             icon: const Icon(Icons.arrow_forward_ios),
-                            tooltip: "Next (Right Arrow)",
+                            tooltip: l10n.next,
                           ),
                         ],
                       ),
@@ -189,6 +191,7 @@ class _FlashcardPageState extends State<FlashcardPage>
   }
 
   Widget _buildFace({required bool isFront}) {
+    final l10n = AppLocalizations.of(context);
     final card = _cards[_currentIndex];
     return Container(
       width: 600,
@@ -210,7 +213,7 @@ class _FlashcardPageState extends State<FlashcardPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              isFront ? "TERM" : "DEFINITION",
+              isFront ? l10n.term.toUpperCase() : l10n.definition.toUpperCase(),
               style: TextStyle(
                 color: isFront
                     ? AppTheme.primaryColor

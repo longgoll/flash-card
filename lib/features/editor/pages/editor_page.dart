@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../providers/editor_provider.dart';
 import '../../../data/models/deck_model.dart';
 import '../../../data/models/card_model.dart';
@@ -61,13 +62,14 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _saveCard() {
+    final l10n = AppLocalizations.of(context);
     final term = _termController.text.trim();
     final def = _defController.text.trim();
 
     if (term.isEmpty || def.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Term and Definition cannot be empty")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.fieldRequired)));
       return;
     }
 
@@ -76,18 +78,18 @@ class _EditorPageState extends State<EditorPage> {
       final updatedCard = _selectedCard!.copyWith(term: term, definition: def);
       context.read<EditorProvider>().updateCard(updatedCard);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Card updated!"),
-          duration: Duration(milliseconds: 800),
+        SnackBar(
+          content: Text(l10n.cardUpdated),
+          duration: const Duration(milliseconds: 800),
         ),
       );
     } else {
       // Create new
       context.read<EditorProvider>().addCard(term, def);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Card saved!"),
-          duration: Duration(milliseconds: 800),
+        SnackBar(
+          content: Text(l10n.cardAdded),
+          duration: const Duration(milliseconds: 800),
         ),
       );
     }
@@ -96,15 +98,16 @@ class _EditorPageState extends State<EditorPage> {
   }
 
   void _editDeckName() {
+    final l10n = AppLocalizations.of(context);
     final nameController = TextEditingController(text: _currentDeck.name);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Rename Deck"),
+        title: Text(l10n.editDeck),
         content: TextField(
           controller: nameController,
           autofocus: true,
-          decoration: const InputDecoration(labelText: "Deck Name"),
+          decoration: InputDecoration(labelText: l10n.deckName),
           onSubmitted: (_) {
             _saveDeckName(nameController.text);
             Navigator.pop(context);
@@ -113,14 +116,14 @@ class _EditorPageState extends State<EditorPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               _saveDeckName(nameController.text);
               Navigator.pop(context);
             },
-            child: const Text("Save"),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -137,12 +140,13 @@ class _EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Row(
           children: [
-            const Text("Editing: "),
+            Text("${l10n.edit}: "),
             Flexible(
               child: InkWell(
                 onTap: _editDeckName,
@@ -265,7 +269,9 @@ class _EditorPageState extends State<EditorPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            _selectedCard != null ? "Edit Card" : "New Card",
+                            _selectedCard != null
+                                ? l10n.editCard
+                                : l10n.addCard,
                             style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(fontWeight: FontWeight.bold),
                           ),
@@ -273,7 +279,7 @@ class _EditorPageState extends State<EditorPage> {
                             TextButton.icon(
                               onPressed: _resetForm,
                               icon: const Icon(Icons.add),
-                              label: const Text("Create New Instead"),
+                              label: Text(l10n.addCard),
                             ),
                         ],
                       ),
@@ -281,7 +287,7 @@ class _EditorPageState extends State<EditorPage> {
 
                       // Term Input
                       Text(
-                        "Term",
+                        l10n.term,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(color: AppTheme.primaryColor),
                       ),
@@ -290,9 +296,7 @@ class _EditorPageState extends State<EditorPage> {
                         controller: _termController,
                         focusNode: _termFocus,
                         style: const TextStyle(fontSize: 18),
-                        decoration: const InputDecoration(
-                          hintText: "Enter term...",
-                        ),
+                        decoration: InputDecoration(hintText: l10n.enterTerm),
                         textInputAction: TextInputAction.next,
                         onSubmitted: (_) => _defFocus.requestFocus(),
                       ),
@@ -301,7 +305,7 @@ class _EditorPageState extends State<EditorPage> {
 
                       // Definition Input
                       Text(
-                        "Definition",
+                        l10n.definition,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(color: AppTheme.primaryColor),
                       ),
@@ -314,8 +318,8 @@ class _EditorPageState extends State<EditorPage> {
                           maxLines: null, // Multiline
                           expands: true,
                           textAlignVertical: TextAlignVertical.top,
-                          decoration: const InputDecoration(
-                            hintText: "Enter definition...",
+                          decoration: InputDecoration(
+                            hintText: l10n.enterDefinition,
                           ),
                         ),
                       ),
@@ -327,7 +331,7 @@ class _EditorPageState extends State<EditorPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Press Ctrl + Enter to save",
+                            "Ctrl + Enter",
                             style: TextStyle(
                               color: Theme.of(
                                 context,
@@ -341,9 +345,7 @@ class _EditorPageState extends State<EditorPage> {
                               _selectedCard != null ? Icons.edit : Icons.save,
                             ),
                             label: Text(
-                              _selectedCard != null
-                                  ? "Update Card"
-                                  : "Save Card",
+                              _selectedCard != null ? l10n.save : l10n.save,
                             ),
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(

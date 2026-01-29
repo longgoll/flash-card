@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../data/models/card_model.dart';
 import '../../../data/models/deck_model.dart';
 import '../../../data/repositories/card_repository.dart';
@@ -104,15 +105,26 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (_questions.isEmpty) {
+    if (_questions.isEmpty || _questions.length < 4) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Quiz")),
-        body: const Center(
-          child: Text("Not enough cards for a quiz (Need at least 4)."),
+        appBar: AppBar(title: Text(l10n.quiz)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.warning_amber_rounded, size: 64, color: Colors.orange),
+              const SizedBox(height: 16),
+              Text(l10n.noCardsInDeck),
+              const SizedBox(height: 8),
+              Text(l10n.addCardsFirst),
+            ],
+          ),
         ),
       );
     }
@@ -126,18 +138,18 @@ class _QuizPageState extends State<QuizPage> {
               const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
               const SizedBox(height: 24),
               Text(
-                "Quiz Complete!",
+                l10n.quizComplete,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 16),
               Text(
-                "Score: $_score / ${_questions.length}",
+                "${l10n.yourScore}: $_score / ${_questions.length}",
                 style: const TextStyle(fontSize: 24),
               ),
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Back to Dashboard"),
+                child: Text(l10n.back),
               ),
             ],
           ),
@@ -150,7 +162,7 @@ class _QuizPageState extends State<QuizPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text("Quiz: ${widget.deck.name}"),
+        title: Text("${l10n.quiz}: ${widget.deck.name}"),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -159,7 +171,7 @@ class _QuizPageState extends State<QuizPage> {
             child: Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Text(
-                "Score: $_score",
+                "${l10n.yourScore}: $_score",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppTheme.successColor,

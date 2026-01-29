@@ -10,13 +10,14 @@ import '../../study/pages/flashcard_page.dart';
 import '../../study/pages/quiz_page.dart';
 import '../../study/pages/match_page.dart';
 import '../../settings/pages/settings_page.dart';
+import '../../../core/l10n/app_localizations.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
-  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.transparent, // Use window background
       appBar: AppBar(
@@ -25,13 +26,8 @@ class DashboardPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: "Settings",
+            tooltip: l10n.settings,
             onPressed: () {
-              // Use a simple unnamed route or define one
-              // For now, dragging in the import might be messy with replace_file_content
-              // I will need to import SettingsPage at the top first,
-              // but I can't do that easily with this tool in one go if I don't select the header.
-              // So I will use Navigator.push with a Builder.
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -43,7 +39,7 @@ class DashboardPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateDeckDialog(context),
-        label: const Text("New Deck"),
+        label: Text(l10n.newDeck),
         icon: const Icon(Icons.add),
         backgroundColor: Theme.of(context).primaryColor,
       ),
@@ -67,7 +63,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "No decks found",
+                    l10n.noDecks,
                     style: TextStyle(
                       fontSize: 20,
                       color: Theme.of(context).brightness == Brightness.dark
@@ -78,7 +74,7 @@ class DashboardPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: () => _showCreateDeckDialog(context),
-                    child: const Text("Create your first deck"),
+                    child: Text(l10n.createFirstDeck),
                   ),
                 ],
               ),
@@ -119,23 +115,21 @@ class DashboardPage extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text("Delete Deck"),
-                        content: Text(
-                          "Are you sure you want to delete '${deck.name}'?",
-                        ),
+                        title: Text(l10n.deleteDeck),
+                        content: Text(l10n.deleteDeckConfirm),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: const Text("Cancel"),
+                            child: Text(l10n.cancel),
                           ),
                           TextButton(
                             onPressed: () {
                               provider.deleteDeck(deck.id!);
                               Navigator.pop(ctx);
                             },
-                            child: const Text(
-                              "Delete",
-                              style: TextStyle(color: Colors.red),
+                            child: Text(
+                              l10n.delete,
+                              style: const TextStyle(color: Colors.red),
                             ),
                           ),
                         ],
@@ -225,7 +219,7 @@ class DashboardPage extends StatelessWidget {
                                 Icons.style,
                                 color: Colors.blueAccent,
                               ),
-                              tooltip: "Flashcards",
+                              tooltip: l10n.flashcards,
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -241,7 +235,7 @@ class DashboardPage extends StatelessWidget {
                                 Icons.school,
                                 color: Theme.of(context).primaryColor,
                               ),
-                              tooltip: "Learn Mode (SM-2)",
+                              tooltip: l10n.learn,
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -257,7 +251,7 @@ class DashboardPage extends StatelessWidget {
                                 Icons.quiz,
                                 color: Colors.orangeAccent,
                               ),
-                              tooltip: "Quiz Mode",
+                              tooltip: l10n.quiz,
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -273,7 +267,7 @@ class DashboardPage extends StatelessWidget {
                                 Icons.extension,
                                 color: Colors.purpleAccent,
                               ),
-                              tooltip: "Match Mode (Game)",
+                              tooltip: l10n.match,
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -300,28 +294,29 @@ class DashboardPage extends StatelessWidget {
   void _showCreateDeckDialog(BuildContext context) {
     final nameController = TextEditingController();
     final descController = TextEditingController();
+    final l10n = AppLocalizations.of(context);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Create New Deck"),
+        title: Text(l10n.createDeck),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Deck Name",
-                hintText: "e.g., English Vocabulary",
+              decoration: InputDecoration(
+                labelText: l10n.deckName,
+                hintText: l10n.enterDeckName,
               ),
               autofocus: true,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: descController,
-              decoration: const InputDecoration(
-                labelText: "Description (Optional)",
-                hintText: "e.g., Common words for daily conversation",
+              decoration: InputDecoration(
+                labelText: l10n.deckDescription,
+                hintText: l10n.enterDeckDescription,
               ),
             ),
           ],
@@ -329,7 +324,7 @@ class DashboardPage extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -341,7 +336,7 @@ class DashboardPage extends StatelessWidget {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text("Create"),
+            child: Text(l10n.create),
           ),
         ],
       ),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/theme/app_theme.dart';
 import 'data/datasources/database_helper.dart';
 import 'features/dashboard/providers/deck_provider.dart';
 import 'features/dashboard/pages/dashboard_page.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/providers/locale_provider.dart';
+import 'core/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,15 +39,24 @@ class FlashDeskApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => DeckProvider()..loadDecks()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LocaleProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, child) {
           return MaterialApp(
             title: 'FlashDesk',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
+            locale: localeProvider.locale,
+            supportedLocales: const [Locale('en', 'US'), Locale('vi', 'VN')],
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
             home: Scaffold(
               body: WindowBorder(
                 color: themeProvider.isDarkMode

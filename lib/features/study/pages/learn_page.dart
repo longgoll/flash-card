@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../controllers/learn_controller.dart';
 import '../../../data/models/deck_model.dart';
 
@@ -12,12 +13,13 @@ class LearnPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ChangeNotifierProvider(
       create: (_) => LearnController()..startSession(deck.id!),
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text("Learn"),
+          title: Text(l10n.learn),
           elevation: 0,
           backgroundColor: Colors.transparent,
           centerTitle: true,
@@ -204,6 +206,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyView(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -215,12 +218,12 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
           ),
           const SizedBox(height: 16),
           Text(
-            "No cards to learn",
+            l10n.noCardsToLearn,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            "Add some cards to this deck first",
+            l10n.addCardsFirstStudy,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
@@ -228,7 +231,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Go Back"),
+            child: Text(l10n.goBack),
           ),
         ],
       ),
@@ -236,6 +239,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildProgressSection(LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
@@ -275,21 +279,21 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 context,
                 Icons.local_fire_department,
                 "${controller.stillLearningCount}",
-                "Still Learning",
+                l10n.stillLearning,
                 Colors.orange,
               ),
               _buildStatItem(
                 context,
                 Icons.lightbulb_outline,
                 "${controller.familiarCount}",
-                "Familiar",
+                l10n.familiar,
                 Colors.amber,
               ),
               _buildStatItem(
                 context,
                 Icons.check_circle_outline,
                 "${controller.masteredCount}",
-                "Mastered",
+                l10n.mastered,
                 AppTheme.successColor,
               ),
             ],
@@ -336,6 +340,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildQuestionCard(BuildContext context, String term) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(40),
@@ -369,9 +374,9 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               color: AppTheme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Text(
-              "TERM",
-              style: TextStyle(
+            child: Text(
+              l10n.term.toUpperCase(),
+              style: const TextStyle(
                 color: AppTheme.primaryColor,
                 letterSpacing: 2,
                 fontSize: 11,
@@ -412,6 +417,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
 
   // Quizlet-style intro view with flip card and self-assessment
   Widget _buildIntroView(LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     final card = controller.currentCard!;
     final isFlipped = controller.isCardFlipped;
 
@@ -450,9 +456,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  isFlipped
-                      ? "Do you know this term?"
-                      : "Tap the card to see the definition",
+                  isFlipped ? l10n.doYouKnow : l10n.tapToSeeDefinition,
                   style: TextStyle(
                     color: Theme.of(
                       context,
@@ -539,7 +543,9 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                isBack ? "DEFINITION" : "TERM",
+                                isBack
+                                    ? l10n.definition.toUpperCase()
+                                    : l10n.term.toUpperCase(),
                                 style: TextStyle(
                                   color: isBack
                                       ? AppTheme.successColor
@@ -576,7 +582,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    "Tap to flip",
+                                    l10n.tapToFlip,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Theme.of(
@@ -615,8 +621,8 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                               Expanded(
                                 child: _buildAssessmentButton(
                                   icon: Icons.school_outlined,
-                                  label: "Still Learning",
-                                  sublabel: "Show me quiz",
+                                  label: l10n.stillLearning,
+                                  sublabel: l10n.showMeQuiz,
                                   color: Colors.orange,
                                   onTap: () {
                                     controller.handleIntroResponse(false);
@@ -629,8 +635,8 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                               Expanded(
                                 child: _buildAssessmentButton(
                                   icon: Icons.check_circle_outline,
-                                  label: "I Know This",
-                                  sublabel: "Skip to typing",
+                                  label: l10n.iKnowThis,
+                                  sublabel: l10n.skipToTyping,
                                   color: AppTheme.successColor,
                                   onTap: () {
                                     controller.handleIntroResponse(true);
@@ -643,7 +649,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                           const SizedBox(height: 12),
                           // Keyboard shortcut hint
                           Text(
-                            "Space to flip · 1 Still Learning · 2 I Know",
+                            "Space: ${l10n.tapToFlip} · 1: ${l10n.stillLearning} · 2: ${l10n.iKnowThis}",
                             style: TextStyle(
                               fontSize: 11,
                               color: Theme.of(
@@ -706,6 +712,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildQuizView(LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     final options = controller.quizOptions;
 
     return CallbackShortcuts(
@@ -724,7 +731,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 const Icon(Icons.touch_app, size: 16, color: Colors.grey),
                 const SizedBox(width: 8),
                 Text(
-                  "Choose the correct definition",
+                  l10n.chooseCorrectDefinition,
                   style: TextStyle(
                     color: Theme.of(
                       context,
@@ -817,6 +824,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildTypingView(LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     if (!_focusNode.hasFocus) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _focusNode.requestFocus(),
@@ -839,7 +847,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               const Icon(Icons.keyboard, size: 16, color: Colors.grey),
               const SizedBox(width: 8),
               Text(
-                "Type the definition",
+                l10n.typeTheDefinition,
                 style: TextStyle(
                   color: Theme.of(
                     context,
@@ -867,7 +875,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 18),
               decoration: InputDecoration(
-                hintText: "Your answer...",
+                hintText: l10n.yourAnswer,
                 filled: true,
                 fillColor: Theme.of(context).colorScheme.surface,
                 border: OutlineInputBorder(
@@ -897,7 +905,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                   _animateCardIn();
                 },
                 icon: const Icon(Icons.skip_next, size: 18),
-                label: const Text("Skip"),
+                label: Text(l10n.skip),
                 style: TextButton.styleFrom(
                   foregroundColor: Theme.of(
                     context,
@@ -908,7 +916,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               ElevatedButton.icon(
                 onPressed: () => _handleTypingSubmit(controller),
                 icon: const Icon(Icons.check, size: 18),
-                label: const Text("Submit"),
+                label: Text(l10n.submit),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
@@ -929,7 +937,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 _animateCardIn();
               },
               child: Text(
-                "Don't know?",
+                l10n.dontKnowQuestion,
                 style: TextStyle(
                   color: Theme.of(
                     context,
@@ -963,6 +971,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildCorrectResult(LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 400),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -995,9 +1004,10 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                   size: 56,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  "Correct! 🎉",
-                  style: TextStyle(
+                const SizedBox(height: 12),
+                Text(
+                  l10n.correctCongrats,
+                  style: const TextStyle(
                     color: AppTheme.successColor,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -1044,7 +1054,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               _animateCardIn();
             },
             icon: const Icon(Icons.arrow_forward),
-            label: const Text("Continue"),
+            label: Text(l10n.continueText),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.successColor,
               foregroundColor: Colors.white,
@@ -1061,6 +1071,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
     String correctAnswer,
     String userAnswer,
   ) {
+    final l10n = AppLocalizations.of(context);
     // Check if wrong from quiz or typing
     final wasQuizMode = controller.previousStep == LearnStep.quiz;
 
@@ -1082,9 +1093,9 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Not quite right",
-                      style: TextStyle(
+                    Text(
+                      l10n.notQuiteRight,
+                      style: const TextStyle(
                         color: AppTheme.errorColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1092,7 +1103,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                     ),
                     if (userAnswer.isNotEmpty)
                       Text(
-                        "Your answer: $userAnswer",
+                        "${l10n.yourAnswerWas}: $userAnswer",
                         style: TextStyle(
                           color: AppTheme.errorColor.withOpacity(0.8),
                           fontSize: 13,
@@ -1120,7 +1131,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Correct Answer:",
+                l10n.correctAnswer,
                 style: TextStyle(
                   color: AppTheme.successColor.withOpacity(0.8),
                   fontSize: 12,
@@ -1152,7 +1163,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
               _animateCardIn();
             },
             icon: const Icon(Icons.arrow_forward),
-            label: const Text("Continue"),
+            label: Text(l10n.continueText),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
               foregroundColor: Colors.white,
@@ -1162,7 +1173,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
         ] else ...[
           // Wrong from typing - require typing the correct answer
           Text(
-            "Type the correct answer to continue:",
+            l10n.typeCorrectToContinue,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               fontSize: 13,
@@ -1220,6 +1231,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   }
 
   Widget _buildFinishedView(BuildContext context, LearnController controller) {
+    final l10n = AppLocalizations.of(context);
     final bool perfectSession =
         controller.longestStreak >= controller.totalCards;
 
@@ -1251,7 +1263,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
             const SizedBox(height: 24),
 
             Text(
-              perfectSession ? "Perfect Round! 🌟" : "Session Complete! 🎉",
+              perfectSession ? l10n.perfectRound : l10n.sessionComplete,
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -1260,7 +1272,10 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
             const SizedBox(height: 8),
 
             Text(
-              "You've mastered all ${controller.masteredCount} cards",
+              l10n.masteredCards.replaceFirst(
+                '{count}',
+                controller.masteredCount.toString(),
+              ),
               style: TextStyle(
                 fontSize: 16,
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
@@ -1277,7 +1292,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                   context,
                   Icons.check_circle,
                   "${controller.masteredCount}",
-                  "Mastered",
+                  l10n.mastered,
                   AppTheme.successColor,
                 ),
                 const SizedBox(width: 16),
@@ -1285,7 +1300,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                   context,
                   Icons.local_fire_department,
                   "${controller.longestStreak}",
-                  "Best Streak",
+                  l10n.bestStreak,
                   Colors.orange,
                 ),
               ],
@@ -1300,7 +1315,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                 OutlinedButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text("Back"),
+                  label: Text(l10n.back),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -1315,7 +1330,7 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
                     _animateCardIn();
                   },
                   icon: const Icon(Icons.replay),
-                  label: const Text("Learn Again"),
+                  label: Text(l10n.learnAgain),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
