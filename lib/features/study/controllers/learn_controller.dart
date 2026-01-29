@@ -4,7 +4,7 @@ import '../../../data/repositories/card_repository.dart';
 import '../../../core/algorithms/sm2_algorithm.dart';
 
 enum LearnStep {
-  intro, // Show term first (Quizlet style intro)
+  intro, // Show term first, flip to see definition (Quizlet style intro)
   quiz, // Multiple choice (Recognition)
   typing, // Typing exact answer (Recall)
   checkResult, // Show Correct/Wrong feedback
@@ -23,12 +23,14 @@ class LearnCardState {
   int sessionStreak; // 0: New, 1: Recognized (quiz), 2: Mastered (typing)
   CardStatus status;
   int wrongCount; // Track wrong attempts
+  bool hasSeenIntro; // Track if user has seen intro for this card
 
   LearnCardState({
     required this.card,
     this.sessionStreak = 0,
     this.status = CardStatus.notStudied,
     this.wrongCount = 0,
+    this.hasSeenIntro = false,
   });
 }
 
@@ -45,6 +47,7 @@ class LearnController extends ChangeNotifier {
   // Current State
   LearnStep _step = LearnStep.intro;
   bool _isLoading = false;
+  bool _isCardFlipped = false; // Track flip state for intro
 
   // Feedback Data
   bool _lastAnswerCorrect = false;
@@ -71,6 +74,7 @@ class LearnController extends ChangeNotifier {
   List<String> get quizOptions => _quizOptions;
   LearnStep get previousStep =>
       _previousStep; // Was it quiz or typing when answered wrong?
+  bool get isCardFlipped => _isCardFlipped;
 
   // Stats Getters
   int get poolRemaining => _pool.length;
@@ -138,6 +142,44 @@ class LearnController extends ChangeNotifier {
     }
   }
 
+  // Flip card in intro mode
+  void flipCard() {
+    _isCardFlipped = !_isCardFlipped;
+    notifyListeners();
+  }
+
+  // Handle self-assessment in intro mode (Quizlet style)
+  // knowsAnswer = true: User claims they know it -> skip quiz, go to typing
+  // knowsAnswer = false: User doesn't know -> show quiz
+  void handleIntroResponse(bool knowsAnswer) {
+    if (currentCardState == null) return;
+
+    final state = currentCardState!;
+    state.hasSeenIntro = true;
+    _isCardFlipped = false; // Reset flip state
+
+    if (knowsAnswer) {
+      // User says they know it -> Skip quiz, go directly to typing
+      // Give them credit for first streak (like passing quiz)
+      state.sessionStreak = 1;
+
+      // Update status to familiar since they claim to know it
+      if (state.status == CardStatus.stillLearning) {
+        _stillLearningCount--;
+        state.status = CardStatus.familiar;
+        _familiarCount++;
+      }
+
+      _step = LearnStep.typing;
+    } else {
+      // User says they don't know -> Go to quiz mode
+      _step = LearnStep.quiz;
+      _generateQuizOptions();
+    }
+
+    notifyListeners();
+  }
+
   void _prepareCard() {
     if (_round.isEmpty) {
       _fillRound();
@@ -149,19 +191,26 @@ class LearnController extends ChangeNotifier {
     }
 
     final state = _round[0];
+    _isCardFlipped = false; // Reset flip state for new card
 
     // Update status if first time seeing this card
     if (state.status == CardStatus.notStudied) {
       state.status = CardStatus.stillLearning;
     }
 
-    // Determine Step based on Session Streak
-    // Streak 0: Quiz mode (multiple choice - recognition)
-    // Streak 1+: Typing mode (recall)
+    // Determine Step based on Session Streak and Intro status
     if (state.sessionStreak == 0) {
-      _step = LearnStep.quiz;
-      _generateQuizOptions();
+      // First time or reset - check if they've seen intro
+      if (!state.hasSeenIntro) {
+        // Show intro first (Quizlet style - flip card to learn)
+        _step = LearnStep.intro;
+      } else {
+        // Already seen intro, go to quiz
+        _step = LearnStep.quiz;
+        _generateQuizOptions();
+      }
     } else {
+      // Already passed quiz, go to typing
       _step = LearnStep.typing;
     }
 

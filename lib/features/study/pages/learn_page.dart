@@ -85,6 +85,9 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
   late AnimationController _cardAnimController;
   late Animation<double> _cardScaleAnim;
   late AnimationController _feedbackAnimController;
+  late AnimationController _flipAnimController;
+  late Animation<double> _flipAnimation;
+  late AnimationController _confettiController;
 
   @override
   void initState() {
@@ -103,6 +106,21 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 500),
     );
 
+    // Flip animation for intro card
+    _flipAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _flipAnimController, curve: Curves.easeInOut),
+    );
+
+    // Confetti animation for streaks
+    _confettiController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
     _cardAnimController.forward();
   }
 
@@ -112,12 +130,24 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
     _focusNode.dispose();
     _cardAnimController.dispose();
     _feedbackAnimController.dispose();
+    _flipAnimController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
   void _animateCardIn() {
     _cardAnimController.reset();
     _cardAnimController.forward();
+    _flipAnimController.reset(); // Reset flip for new card
+  }
+
+  void _flipCard(LearnController controller) {
+    if (controller.isCardFlipped) {
+      _flipAnimController.reverse();
+    } else {
+      _flipAnimController.forward();
+    }
+    controller.flipCard();
   }
 
   @override
@@ -367,6 +397,8 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
 
   Widget _buildAnswerSection(LearnController controller) {
     switch (controller.step) {
+      case LearnStep.intro:
+        return _buildIntroView(controller);
       case LearnStep.quiz:
         return _buildQuizView(controller);
       case LearnStep.typing:
@@ -376,6 +408,301 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
       default:
         return const SizedBox();
     }
+  }
+
+  // Quizlet-style intro view with flip card and self-assessment
+  Widget _buildIntroView(LearnController controller) {
+    final card = controller.currentCard!;
+    final isFlipped = controller.isCardFlipped;
+
+    return CallbackShortcuts(
+      bindings: {
+        // Space to flip card
+        const SingleActivator(LogicalKeyboardKey.space): () =>
+            _flipCard(controller),
+        // 1 for Still Learning (only when flipped)
+        const SingleActivator(LogicalKeyboardKey.digit1): () {
+          if (isFlipped) {
+            controller.handleIntroResponse(false);
+            _animateCardIn();
+          }
+        },
+        // 2 for I Know (only when flipped)
+        const SingleActivator(LogicalKeyboardKey.digit2): () {
+          if (isFlipped) {
+            controller.handleIntroResponse(true);
+            _animateCardIn();
+          }
+        },
+      },
+      child: Focus(
+        autofocus: true,
+        child: Column(
+          children: [
+            // Instruction text
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isFlipped ? Icons.check_circle_outline : Icons.touch_app,
+                  size: 16,
+                  color: Colors.grey,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isFlipped
+                      ? "Do you know this term?"
+                      : "Tap the card to see the definition",
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.6),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Flip Card
+            GestureDetector(
+              onTap: () => _flipCard(controller),
+              child: AnimatedBuilder(
+                animation: _flipAnimation,
+                builder: (context, child) {
+                  final angle = _flipAnimation.value * 3.14159;
+                  final isBack = _flipAnimation.value > 0.5;
+
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY(angle),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: isBack
+                              ? [
+                                  AppTheme.primaryColor.withOpacity(0.1),
+                                  AppTheme.primaryColor.withOpacity(0.05),
+                                ]
+                              : [
+                                  Theme.of(context).colorScheme.surface,
+                                  Color.lerp(
+                                    Theme.of(context).colorScheme.surface,
+                                    AppTheme.primaryColor,
+                                    0.05,
+                                  )!,
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isBack
+                              ? AppTheme.primaryColor.withOpacity(0.3)
+                              : Theme.of(context).dividerColor.withOpacity(0.3),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                (isBack ? AppTheme.primaryColor : Colors.black)
+                                    .withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.identity()
+                          ..rotateY(isBack ? 3.14159 : 0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Label
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color:
+                                    (isBack
+                                            ? AppTheme.successColor
+                                            : AppTheme.primaryColor)
+                                        .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                isBack ? "DEFINITION" : "TERM",
+                                style: TextStyle(
+                                  color: isBack
+                                      ? AppTheme.successColor
+                                      : AppTheme.primaryColor,
+                                  letterSpacing: 2,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Content
+                            Text(
+                              isBack ? card.definition : card.term,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                height: 1.4,
+                              ),
+                            ),
+                            if (!isBack) ...[
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.touch_app,
+                                    size: 14,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withOpacity(0.4),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Tap to flip",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withOpacity(0.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Self-assessment buttons (only show when flipped)
+            AnimatedOpacity(
+              opacity: isFlipped ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 300),
+              child: AnimatedSlide(
+                offset: isFlipped ? Offset.zero : const Offset(0, 0.3),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: isFlipped
+                    ? Column(
+                        children: [
+                          Row(
+                            children: [
+                              // "Still Learning" button
+                              Expanded(
+                                child: _buildAssessmentButton(
+                                  icon: Icons.school_outlined,
+                                  label: "Still Learning",
+                                  sublabel: "Show me quiz",
+                                  color: Colors.orange,
+                                  onTap: () {
+                                    controller.handleIntroResponse(false);
+                                    _animateCardIn();
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // "I Know" button
+                              Expanded(
+                                child: _buildAssessmentButton(
+                                  icon: Icons.check_circle_outline,
+                                  label: "I Know This",
+                                  sublabel: "Skip to typing",
+                                  color: AppTheme.successColor,
+                                  onTap: () {
+                                    controller.handleIntroResponse(true);
+                                    _animateCardIn();
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Keyboard shortcut hint
+                          Text(
+                            "Space to flip · 1 Still Learning · 2 I Know",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.4),
+                            ),
+                          ),
+                        ],
+                      )
+                    : const SizedBox(height: 100), // Placeholder height
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAssessmentButton({
+    required IconData icon,
+    required String label,
+    required String sublabel,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                sublabel,
+                style: TextStyle(color: color.withOpacity(0.7), fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildQuizView(LearnController controller) {
