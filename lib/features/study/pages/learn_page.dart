@@ -972,96 +972,124 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
 
   Widget _buildCorrectResult(LearnController controller) {
     final l10n = AppLocalizations.of(context);
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(milliseconds: 400),
-      tween: Tween(begin: 0.0, end: 1.0),
-      curve: Curves.easeOutBack,
-      builder: (context, value, child) {
-        // Clamp value to valid opacity range (easeOutBack can slightly overshoot)
-        final clampedOpacity = value.clamp(0.0, 1.0);
-        return Transform.scale(
-          scale: 0.8 + (0.2 * value.clamp(0.0, 1.0)),
-          child: Opacity(opacity: clampedOpacity, child: child),
-        );
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter): () {
+          controller.nextCard();
+          _animateCardIn();
+        },
+        const SingleActivator(LogicalKeyboardKey.space): () {
+          controller.nextCard();
+          _animateCardIn();
+        },
       },
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppTheme.successColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppTheme.successColor.withOpacity(0.3),
-                width: 2,
+      child: Focus(
+        autofocus: true,
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 400),
+          tween: Tween(begin: 0.0, end: 1.0),
+          curve: Curves.easeOutBack,
+          builder: (context, value, child) {
+            // Clamp value to valid opacity range (easeOutBack can slightly overshoot)
+            final clampedOpacity = value.clamp(0.0, 1.0);
+            return Transform.scale(
+              scale: 0.8 + (0.2 * value.clamp(0.0, 1.0)),
+              child: Opacity(opacity: clampedOpacity, child: child),
+            );
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppTheme.successColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.successColor.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppTheme.successColor,
+                      size: 56,
+                    ),
+                    const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.correctCongrats,
+                      style: const TextStyle(
+                        color: AppTheme.successColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (controller.correctStreak > 1) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.local_fire_department,
+                              color: Colors.orange,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "${controller.correctStreak} streak!",
+                              style: const TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: AppTheme.successColor,
-                  size: 56,
-                ),
-                const SizedBox(height: 12),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.correctCongrats,
-                  style: const TextStyle(
-                    color: AppTheme.successColor,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () {
+                  controller.nextCard();
+                  _animateCardIn();
+                },
+                icon: const Icon(Icons.arrow_forward),
+                label: Text(l10n.continueText),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.successColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
                   ),
                 ),
-                if (controller.correctStreak > 1) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.local_fire_department,
-                          color: Colors.orange,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "${controller.correctStreak} streak!",
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Press Enter or Space to continue",
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              controller.nextCard();
-              _animateCardIn();
-            },
-            icon: const Icon(Icons.arrow_forward),
-            label: Text(l10n.continueText),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.successColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1075,158 +1103,192 @@ class _LearnViewState extends State<LearnView> with TickerProviderStateMixin {
     // Check if wrong from quiz or typing
     final wasQuizMode = controller.previousStep == LearnStep.quiz;
 
-    return Column(
-      children: [
-        // Wrong indicator
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppTheme.errorColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.close, color: AppTheme.errorColor, size: 32),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.notQuiteRight,
-                      style: const TextStyle(
-                        color: AppTheme.errorColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+    return CallbackShortcuts(
+      bindings: wasQuizMode
+          ? {
+              const SingleActivator(LogicalKeyboardKey.enter): () {
+                controller.nextCard();
+                _animateCardIn();
+              },
+              const SingleActivator(LogicalKeyboardKey.space): () {
+                controller.nextCard();
+                _animateCardIn();
+              },
+            }
+          : {},
+      child: Focus(
+        autofocus: wasQuizMode,
+        child: Column(
+          children: [
+            // Wrong indicator
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.errorColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.errorColor.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.close, color: AppTheme.errorColor, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.notQuiteRight,
+                          style: const TextStyle(
+                            color: AppTheme.errorColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (userAnswer.isNotEmpty)
+                          Text(
+                            "${l10n.yourAnswerWas}: $userAnswer",
+                            style: TextStyle(
+                              color: AppTheme.errorColor.withOpacity(0.8),
+                              fontSize: 13,
+                            ),
+                          ),
+                      ],
                     ),
-                    if (userAnswer.isNotEmpty)
-                      Text(
-                        "${l10n.yourAnswerWas}: $userAnswer",
-                        style: TextStyle(
-                          color: AppTheme.errorColor.withOpacity(0.8),
-                          fontSize: 13,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Correct answer
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.successColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppTheme.successColor.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.correctAnswer,
+                    style: TextStyle(
+                      color: AppTheme.successColor.withOpacity(0.8),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    correctAnswer,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Quizlet style: Only require typing if wrong from TYPING mode
+            // If wrong from QUIZ mode, just show Continue button
+            if (wasQuizMode) ...[
+              // Wrong from quiz - just show Continue button (Quizlet style)
+              ElevatedButton.icon(
+                onPressed: () {
+                  controller.nextCard();
+                  _animateCardIn();
+                },
+                icon: const Icon(Icons.arrow_forward),
+                label: Text(l10n.continueText),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Press Enter or Space to continue",
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.4),
+                  fontSize: 12,
+                ),
+              ),
+            ] else ...[
+              // Wrong from typing - require typing the correct answer
+              Text(
+                l10n.typeCorrectToContinue,
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Builder(
+                builder: (context) {
+                  if (!_focusNode.hasFocus) {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => _focusNode.requestFocus(),
+                    );
+                  }
+                  return TextField(
+                    controller: _textController,
+                    focusNode: _focusNode,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      hintText: correctAnswer,
+                      hintStyle: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.2),
+                      ),
+                      filled: true,
+                      fillColor: Theme.of(context).colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: AppTheme.errorColor,
+                          width: 2,
                         ),
                       ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Correct answer
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.successColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.successColor.withOpacity(0.3)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.correctAnswer,
-                style: TextStyle(
-                  color: AppTheme.successColor.withOpacity(0.8),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                correctAnswer,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // Quizlet style: Only require typing if wrong from TYPING mode
-        // If wrong from QUIZ mode, just show Continue button
-        if (wasQuizMode) ...[
-          // Wrong from quiz - just show Continue button (Quizlet style)
-          ElevatedButton.icon(
-            onPressed: () {
-              controller.nextCard();
-              _animateCardIn();
-            },
-            icon: const Icon(Icons.arrow_forward),
-            label: Text(l10n.continueText),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-            ),
-          ),
-        ] else ...[
-          // Wrong from typing - require typing the correct answer
-          Text(
-            l10n.typeCorrectToContinue,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 13,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          Builder(
-            builder: (context) {
-              if (!_focusNode.hasFocus) {
-                WidgetsBinding.instance.addPostFrameCallback(
-                  (_) => _focusNode.requestFocus(),
-                );
-              }
-              return TextField(
-                controller: _textController,
-                focusNode: _focusNode,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(
-                  hintText: correctAnswer,
-                  hintStyle: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withOpacity(0.2),
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppTheme.errorColor,
-                      width: 2,
                     ),
-                  ),
-                ),
-                onChanged: (val) {
-                  // Instant check - if correct, proceed
-                  if (val.trim().toLowerCase() ==
-                      correctAnswer.trim().toLowerCase()) {
-                    _textController.clear();
-                    controller.nextCard();
-                    _animateCardIn();
-                  }
+                    onChanged: (val) {
+                      // Instant check - if correct, proceed
+                      if (val.trim().toLowerCase() ==
+                          correctAnswer.trim().toLowerCase()) {
+                        _textController.clear();
+                        controller.nextCard();
+                        _animateCardIn();
+                      }
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ],
-      ],
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
